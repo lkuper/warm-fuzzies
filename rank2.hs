@@ -9,33 +9,28 @@ apply f v = f v
 -- | Incidentally, because we have Rank2Types turned on, We
 -- could've also written it with an explicit 'forall':
 
--- applyExplicitForall :: forall a . (a -> a) -> a -> a
--- applyExplicitForall f v = f v
+applyExplicitForall :: forall a . (a -> a) -> a -> a
+applyExplicitForall f v = f v
 
 -- | OK, great.  You can do, e.g., 'apply double 5' and get 10.
 
 double :: Int -> Int
 double x = 2 * x
 
--- | 'apply' will work for any type, but every 'a' in the type of
--- 'apply' still has to be the *same* particular type.  'a' gets
--- instantiated with a single type at some point -- in the case of
--- 'double', it gets instantiated with Int.
--- 
--- But what if we wanted f itself to be a polymorphic function?
--- Polymorphic functions from a to a aren't very interesting (heh),
--- but how about one from a to [a]?  Like these, for instance:
+-- | It will work if f is itself polymorphic, too.  There's only one
+-- polymorphic function from a to a, of course!
+
+identity :: a -> a
+identity x = x
+
+-- | How about a slightly more interesting polymorphic function?  Say,
+-- one from a to [a]?  Like these, for instance:
 
 listify :: a -> [a]
 listify x = [x]
 
 listifyFour :: a -> [a]
 listifyFour x = [x, x, x, x]
-
--- | And with explicit 'forall', if we like:
-
-listifyExplicitForall :: forall a . a -> [a]
-listifyExplicitForall x = [x]
 
 -- | So, then, our "apply" function would look like this:
 
@@ -48,18 +43,18 @@ applyListifySimple f v = f v
 -- third argument, n, which is an Int, and then return a tuple of
 -- both.
 
--- applyListifyTwoWays :: (a -> [a]) -> a -> Int -> ([a], [Int])
--- applyListifyTwoWays f v n = (f v, f n)
+-- applyListifyTwoWaysWrong :: (a -> [a]) -> a -> Int -> ([a], [Int])
+-- applyListifyTwoWaysWrong f v n = (f v, f n)
 
 -- | Something like that should be fine, because f can take any type.
 -- Except it doesn't work:
 
--- rank2.hs:45:35:
+-- rank2.hs:47:40:
 --     Couldn't match type `a' with `Int'
 --       `a' is a rigid type variable bound by
 --           the type signature for
---             applyListifyTwoWays :: (a -> [a]) -> a -> Int -> ([a], [Int])
---           at rank2.hs:44:24
+--             applyListifyTwoWaysWrong :: (a -> [a]) -> a -> Int -> ([a], [Int])
+--           at rank2.hs:46:29
 --     Expected type: [Int]
 --       Actual type: [a]
 --     In the return type of a call of `f'
@@ -67,11 +62,10 @@ applyListifySimple f v = f v
 --     In the expression: (f v, f n)
 
 -- | The problem is that the scope of the implicit "forall a" at the
--- beginning of the type extends over the whole type, saying that
--- we're not allowed to make assumptions about the return value of f.
--- It also wouldn't work to just use [a] instead of [Int] in the
--- return type, because we wouldn't be able to guarantee returning an
--- [a].
+-- beginning of the type extends over the whole type.  We can't leave
+-- 'a' abstract in the call 'f v' but specialize it in the call 'f n'.
+-- Either it's abstract everywhere in its scope, or it's concrete
+-- everywhere in its scope.
 -- 
 -- The solution is to limit the scope of a, like this:
 
