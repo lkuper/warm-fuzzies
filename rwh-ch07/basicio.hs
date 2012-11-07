@@ -28,3 +28,10 @@ storeAction = putStrLn "Greetings!"
 -- computation that is invoked by main, by ghci, or inside a "do"
 -- block.
 
+
+-- | Here's what this would look like without "do".  inpStr is the
+-- variable bound by a lambda.
+altMain =
+    putStrLn "Greetings!  What is your name?" >>
+    getLine >>=
+    (\inpStr -> putStrLn $ "Welcome to Haskell, " ++ inpStr ++ "!")
