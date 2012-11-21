@@ -93,7 +93,7 @@ fact n = n * (fact (n - 1))
 main :: IO ()
 main = do
   print $ runPar $ do
-    factorials <- parMap fact [3, 4, 5, 6, 7, 8, 9, 10]
+    factorials <- parMap fact [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
     return factorials
   return ()
 
